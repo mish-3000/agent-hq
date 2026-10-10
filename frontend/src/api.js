@@ -21,6 +21,10 @@ export function getSkills() {
   return request('/skills')
 }
 
+export function getActivity() {
+  return request('/activity')
+}
+
 export function createSkill(name, description, rolePrompt) {
   return request('/skills', {
     method: 'POST',

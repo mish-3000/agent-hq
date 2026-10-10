@@ -1,5 +1,7 @@
 import asyncio
 import logging
+from collections import deque
+from datetime import datetime, timezone
 from typing import Literal
 
 from dotenv import load_dotenv
@@ -52,6 +54,20 @@ DELEGATED_NOTE = (
     "agents. Answer in text (you may include code in your reply), and don't claim to have "
     "made any changes."
 )
+
+# Tool use across all chats (search, ask_agent, write_code_file), oldest first.
+# In memory only, so it resets when the server restarts.
+ACTIVITY_LIMIT = 20
+_activity: deque[dict] = deque(maxlen=ACTIVITY_LIMIT)
+
+
+def log_activity(agent: str, action: str) -> None:
+    _activity.append({
+        "agent": agent,
+        "action": action,
+        "timestamp": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+    })
+
 
 app = FastAPI(title="Agent HQ API")
 logger = logging.getLogger("uvicorn.error")
@@ -190,6 +206,15 @@ def used_search(response: types.GenerateContentResponse) -> bool:
     return bool(gm and (gm.web_search_queries or gm.grounding_chunks))
 
 
+def describe_search(response: types.GenerateContentResponse) -> str:
+    """Activity text for a grounded response, e.g. 'searched the web for "x" (+1 more)'."""
+    queries = response.candidates[0].grounding_metadata.web_search_queries or []
+    if not queries:
+        return "searched the web"
+    more = f" (+{len(queries) - 1} more)" if len(queries) > 1 else ""
+    return f'searched the web for "{queries[0]}"{more}'
+
+
 def reply_text(response: types.GenerateContentResponse) -> str:
     """The model's visible text (skips thoughts and server-side tool call/response parts)."""
     if not response.candidates or not response.candidates[0].content:
@@ -206,6 +231,8 @@ async def ask_agent(caller: str, agent_name: str, question: str) -> dict:
         names = ", ".join(s["name"] for s in list_skills())
         return {"error": f"Unknown agent {agent_name!r}. Available agents: {names}"}
 
+    # Logged when the handoff starts, so the feed shows it while the other agent works.
+    log_activity(caller, f"asked {agent_name}")
     try:
         result = await run_agent(agent_name, question, [], delegated=True)
     except HTTPException as e:
@@ -218,6 +245,16 @@ async def ask_agent(caller: str, agent_name: str, question: str) -> dict:
 
 
 async def run_tool(call: types.FunctionCall, skill_name: str, delegated: bool) -> dict:
+    """Run one function call and record it in the activity feed."""
+    result = await _run_tool(call, skill_name, delegated)
+    if "error" in result:
+        log_activity(skill_name, f"{call.name} failed: {str(result['error'])[:200]}")
+    elif call.name != "ask_agent":  # ask_agent logs itself when it starts
+        log_activity(skill_name, result.get("tool_used") or f"used {call.name}")
+    return result
+
+
+async def _run_tool(call: types.FunctionCall, skill_name: str, delegated: bool) -> dict:
     args = call.args or {}
     try:
         if call.name == "ask_agent" and not delegated:
@@ -265,8 +302,10 @@ async def run_agent(
             response = await get_client().aio.models.generate_content(
                 model=MODEL, contents=contents, config=config
             )
-            if used_search(response) and "searched the web" not in tools_used:
-                tools_used.append("searched the web")
+            if used_search(response):
+                log_activity(skill_name, describe_search(response))
+                if "searched the web" not in tools_used:
+                    tools_used.append("searched the web")
             if not response.function_calls:
                 break
 
@@ -299,6 +338,12 @@ async def run_agent(
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
+
+@app.get("/activity")
+def activity():
+    """The most recent tool uses across all chats, newest first."""
+    return list(reversed(_activity))
 
 
 @app.get("/skills")

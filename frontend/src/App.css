@@ -505,3 +505,82 @@
   opacity: 0.5;
   cursor: default;
 }
+
+/* ---------- Sidebar tabs + activity feed ---------- */
+
+.sidebar-tabs {
+  display: flex;
+  background: var(--bg-bar);
+}
+
+.sidebar-tab {
+  flex: 1;
+  padding: 10px 0 9px;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  background: transparent;
+  color: var(--bar-muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.sidebar-tab.active {
+  border-bottom-color: var(--bar-text);
+  color: var(--bar-text);
+}
+
+.sidebar-tab:focus-visible {
+  outline: 2px solid var(--bar-text);
+  outline-offset: -4px;
+}
+
+.activity-feed {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px 0;
+}
+
+.activity-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 16px;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.activity-row:hover:not(:disabled) {
+  background: var(--bg-hover);
+}
+
+.activity-row:disabled {
+  cursor: default;
+}
+
+.activity-row .avatar {
+  width: 32px;
+  height: 32px;
+  font-size: 0.7rem;
+}
+
+.activity-body {
+  min-width: 0;
+}
+
+.activity-body p {
+  margin: 0;
+  font-size: 0.85rem;
+  overflow-wrap: anywhere;
+}
+
+.activity-body time {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
