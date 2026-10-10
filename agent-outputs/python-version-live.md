@@ -1,1 +1,1 @@
-The latest stable Python version is 3.15.0.
+3.15.0
