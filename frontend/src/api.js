@@ -21,6 +21,14 @@ export function getSkills() {
   return request('/skills')
 }
 
+export function createSkill(name, description, rolePrompt) {
+  return request('/skills', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, description, role_prompt: rolePrompt }),
+  })
+}
+
 export function sendChat(skillName, message, history) {
   return request(`/chat/${encodeURIComponent(skillName)}`, {
     method: 'POST',

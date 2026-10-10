@@ -13,17 +13,29 @@ from pydantic import AliasChoices, BaseModel, Field
 load_dotenv()
 
 from github_tools import WRITE_CODE_FILE, write_code_file  # noqa: E402
-from skills import get_skill, list_skills  # noqa: E402  (scans skills/ on import)
+from skills import (  # noqa: E402  (scans skills/ on import)
+    InvalidSkillError,
+    SkillExistsError,
+    create_skill,
+    get_skill,
+    list_skills,
+)
 
 MODEL = "gemma-4-26b-a4b-it"
 MAX_TOOL_ROUNDS = 5
 
-# Gemini built-in tools for each skill.
+GOOGLE_SEARCH = types.Tool(google_search=types.GoogleSearch())
+
+# Gemini built-in tools for each skill. Any other skill (e.g. one created via POST /skills)
+# gets DEFAULT_BUILTIN_TOOLS, so custom agents can search like research-agent.
 SKILL_BUILTIN_TOOLS = {
-    "research-agent": [types.Tool(google_search=types.GoogleSearch())],
+    "dev-agent": [],
+    "research-agent": [GOOGLE_SEARCH],
 }
-# Function-calling tools for each skill (ask_agent is added for every skill),
-# and the Python functions that implement them.
+DEFAULT_BUILTIN_TOOLS = [GOOGLE_SEARCH]
+# Function-calling tools for each skill (ask_agent is added for every skill), and the Python
+# functions that implement them. write_code_file is deliberately dev-agent only: custom agents
+# never get tools that write to the repo.
 SKILL_FUNCTIONS = {
     "dev-agent": [WRITE_CODE_FILE],
 }
@@ -97,6 +109,17 @@ class ChatRequest(BaseModel):
     history: list[HistoryMessage] = []
 
 
+class CreateSkillRequest(BaseModel):
+    name: str
+    description: str
+    role_prompt: str
+
+
+class SkillSummary(BaseModel):
+    name: str
+    description: str
+
+
 class ChatResponse(BaseModel):
     reply: str
     tool_used: str | None = None
@@ -142,7 +165,7 @@ def build_config(skill_name: str, instructions: str, delegated: bool) -> types.G
         functions.append(ask)
     if delegated:
         instructions += DELEGATED_NOTE
-    builtin = SKILL_BUILTIN_TOOLS.get(skill_name, [])
+    builtin = SKILL_BUILTIN_TOOLS.get(skill_name, DEFAULT_BUILTIN_TOOLS)
 
     tools = list(builtin)
     if functions:
@@ -281,6 +304,17 @@ def health():
 @app.get("/skills")
 def skills():
     return list_skills()
+
+
+@app.post("/skills", response_model=SkillSummary, status_code=201)
+def new_skill(req: CreateSkillRequest):
+    """Create backend/skills/<name>/SKILL.md and make the agent available immediately."""
+    try:
+        return create_skill(req.name, req.description, req.role_prompt)
+    except InvalidSkillError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except SkillExistsError as e:
+        raise HTTPException(status_code=409, detail=str(e))
 
 
 @app.post("/chat/{skill_name}", response_model=ChatResponse)

@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
-import { getSkills, sendChat } from './api.js'
+import { createSkill, getSkills, sendChat } from './api.js'
 import Sidebar from './components/Sidebar.jsx'
 import ChatPane from './components/ChatPane.jsx'
+import NewAgentModal from './components/NewAgentModal.jsx'
 import './App.css'
 
 // A message is { id, role: 'user' | 'model', text, at, toolUsed?, url?, error? }.
@@ -14,12 +15,27 @@ function App() {
   const [chats, setChats] = useState({}) // { [skillName]: Message[] }
   const [pending, setPending] = useState({}) // { [skillName]: true while waiting for a reply }
   const [drafts, setDrafts] = useState({}) // { [skillName]: unsent text in the input }
+  const [showNewAgent, setShowNewAgent] = useState(false)
 
   useEffect(() => {
     getSkills()
       .then(setSkills)
       .catch((e) => setSkillsError(e.message))
   }, [])
+
+  // Throws on a 400/409 so the modal can show the backend's error inline.
+  async function handleCreateAgent(name, job) {
+    const created = await createSkill(name, job, job)
+    try {
+      setSkills(await getSkills())
+      setSkillsError(null)
+    } catch {
+      // The agent exists on the backend even if the refetch failed; show it anyway.
+      setSkills((prev) => [...(prev ?? []).filter((s) => s.name !== created.name), created])
+    }
+    setShowNewAgent(false)
+    setActiveSkill(created.name)
+  }
 
   function updateChat(skillName, update) {
     setChats((prev) => ({ ...prev, [skillName]: update(prev[skillName] ?? []) }))
@@ -68,6 +84,7 @@ function App() {
         pending={pending}
         activeSkill={activeSkill}
         onSelect={setActiveSkill}
+        onNewAgent={() => setShowNewAgent(true)}
       />
       {skill ? (
         <ChatPane
@@ -85,6 +102,9 @@ function App() {
           <h2>Agent HQ</h2>
           <p>Pick an agent on the left to start a chat.</p>
         </section>
+      )}
+      {showNewAgent && (
+        <NewAgentModal onCreate={handleCreateAgent} onClose={() => setShowNewAgent(false)} />
       )}
     </div>
   )

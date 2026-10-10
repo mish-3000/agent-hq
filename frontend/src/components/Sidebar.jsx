@@ -1,12 +1,16 @@
 import Avatar from './Avatar.jsx'
 import { displayName, formatTime } from '../format.js'
 
-function Sidebar({ skills, error, chats, pending, activeSkill, onSelect }) {
+function Sidebar({ skills, error, chats, pending, activeSkill, onSelect, onNewAgent }) {
   return (
     <aside className="sidebar">
       <header className="sidebar-header">
         <h1>Agent HQ</h1>
       </header>
+
+      <button type="button" className="new-agent-button" onClick={onNewAgent}>
+        + New Agent
+      </button>
 
       <nav className="chat-list" aria-label="Agents">
         {error && <p className="sidebar-note error">{error}</p>}
