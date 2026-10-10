@@ -9,7 +9,7 @@ you watch the handoff happen live in the Activity feed. Need a new specialist? C
 **+ New Agent**, give it a name and a job description, and it's on the team immediately. No
 config files, no restarts, no orchestration code.
 
-> 🏆 Built for **Best Use of Gemma 4** and **Best Open-Source AI Project**.
+> Built for **Best Use of Gemma 4** and **Best Open-Source AI Project**.
 
 ## Architecture
 
