@@ -1,11 +1,15 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import Avatar from './Avatar.jsx'
 import { displayName, formatTime } from '../format.js'
 
-function ChatPane({ skill, messages, isPending, onSend, onBack }) {
-  const [draft, setDraft] = useState('')
+function ChatPane({ skill, messages, isPending, draft, onDraftChange, onSend, onBack }) {
   const endRef = useRef(null)
   const inputRef = useRef(null)
+
+  // Size the input to fit a restored multi-line draft.
+  useEffect(() => {
+    resizeInput()
+  }, [])
 
   // Keep the newest message (or the typing indicator) in view.
   useEffect(() => {
@@ -28,7 +32,7 @@ function ChatPane({ skill, messages, isPending, onSend, onBack }) {
     const text = draft.trim()
     if (!text || isPending) return
     onSend(text)
-    setDraft('')
+    onDraftChange('')
     requestAnimationFrame(resizeInput)
   }
 
@@ -98,7 +102,7 @@ function ChatPane({ skill, messages, isPending, onSend, onBack }) {
           placeholder="Type a message"
           aria-label="Message"
           onChange={(e) => {
-            setDraft(e.target.value)
+            onDraftChange(e.target.value)
             resizeInput()
           }}
           onKeyDown={handleKeyDown}

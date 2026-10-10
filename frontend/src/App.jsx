@@ -13,6 +13,7 @@ function App() {
   const [activeSkill, setActiveSkill] = useState(null)
   const [chats, setChats] = useState({}) // { [skillName]: Message[] }
   const [pending, setPending] = useState({}) // { [skillName]: true while waiting for a reply }
+  const [drafts, setDrafts] = useState({}) // { [skillName]: unsent text in the input }
 
   useEffect(() => {
     getSkills()
@@ -74,6 +75,8 @@ function App() {
           skill={skill}
           messages={chats[skill.name] ?? []}
           isPending={!!pending[skill.name]}
+          draft={drafts[skill.name] ?? ''}
+          onDraftChange={(text) => setDrafts((d) => ({ ...d, [skill.name]: text }))}
           onSend={(text) => handleSend(skill.name, text)}
           onBack={() => setActiveSkill(null)}
         />
