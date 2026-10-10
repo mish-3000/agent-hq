@@ -1,9 +1,11 @@
 import asyncio
+import logging
 from typing import Literal
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from google import genai
 from google.genai import errors, types
 from pydantic import AliasChoices, BaseModel, Field
@@ -40,6 +42,23 @@ DELEGATED_NOTE = (
 )
 
 app = FastAPI(title="Agent HQ API")
+logger = logging.getLogger("uvicorn.error")
+
+
+# Registered before CORSMiddleware so CORS wraps it: unhandled errors become JSON 500s that
+# still carry CORS headers. Otherwise the browser blocks the response and the frontend can only
+# report "can't reach the backend" instead of the actual error.
+@app.middleware("http")
+async def unhandled_errors_as_json(request: Request, call_next):
+    try:
+        return await call_next(request)
+    except Exception as e:
+        logger.exception("Unhandled error on %s %s", request.method, request.url.path)
+        return JSONResponse(
+            status_code=500,
+            content={"detail": f"Internal server error: {type(e).__name__}: {e}"},
+        )
+
 
 app.add_middleware(
     CORSMiddleware,
