@@ -6,7 +6,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from google import genai
 from google.genai import errors, types
-from pydantic import BaseModel
+from pydantic import AliasChoices, BaseModel, Field
 
 load_dotenv()
 
@@ -69,7 +69,7 @@ def get_client() -> genai.Client:
 
 class HistoryMessage(BaseModel):
     role: Literal["user", "model", "assistant"]
-    content: str
+    text: str = Field(validation_alias=AliasChoices("text", "content"))
 
 
 class ChatRequest(BaseModel):
@@ -207,7 +207,7 @@ async def run_agent(
     contents = [
         types.Content(
             role="user" if m.role == "user" else "model",
-            parts=[types.Part(text=m.content)],
+            parts=[types.Part(text=m.text)],
         )
         for m in history
     ]
