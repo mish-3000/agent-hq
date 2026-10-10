@@ -62,7 +62,8 @@ async def unhandled_errors_as_json(request: Request, call_next):
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    # The Vite dev server on any local port: it moves to 5174, 5175, ... when 5173 is taken.
+    allow_origin_regex=r"^http://(localhost|127\.0\.0\.1)(:\d+)?$",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
