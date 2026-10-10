@@ -15,14 +15,6 @@ export function initials(skillName) {
     .join('')
 }
 
-const AVATAR_HUES = [168, 200, 260, 330, 20, 45, 100]
-
-export function avatarHue(skillName) {
-  let hash = 0
-  for (const ch of skillName) hash = (hash * 31 + ch.charCodeAt(0)) >>> 0
-  return AVATAR_HUES[hash % AVATAR_HUES.length]
-}
-
 // "just now", "42s ago", "5m ago", "3h ago", then the time of day.
 export function timeAgo(timestamp, now = Date.now()) {
   const seconds = Math.max(0, Math.round((now - new Date(timestamp).getTime()) / 1000))

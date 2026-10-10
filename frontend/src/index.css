@@ -1,60 +1,31 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+
 :root {
-  --accent: #0b6e63;
-  --accent-dark: #075e54;
-  --accent-text: #ffffff;
+  /* Monochrome palette. The only accent is silver/chrome, used sparingly. */
+  --bg: #0a0a0a;
+  --bg-raised: #111111;
+  --bg-panel: #141414;
+  --bg-hover: #161616;
+  --line: #2a2a2a;
+  --line-strong: #3a3a3a;
+  --text: #ededed;
+  --text-soft: #b5b5b5;
+  --text-muted: #7a7a7a;
+  --accent: #d8d8d8;
+  --accent-bright: #e8e8e8;
+  --accent-dim: #c8c8c8;
+  --accent-text: #0a0a0a;
 
-  --bg-app: #d5dbd9;
-  --bg-panel: #ffffff;
-  --bg-header: #f0f2f5;
-  --bg-bar: var(--accent-dark);
-  --bar-text: #ffffff;
-  --bar-muted: rgb(255 255 255 / 75%);
-  --bg-hover: #f4f6f5;
-  --bg-active: #e7f1ef;
-  --bg-chat: #eef1f0;
-  --bubble-in: #ffffff;
-  --bubble-in-text: #111b21;
-  --bubble-out: var(--accent);
-  --bubble-out-text: #ffffff;
-  --bubble-out-muted: rgb(255 255 255 / 70%);
-  --system-bg: #fff5c4;
-  --system-text: #54656f;
-  --text: #111b21;
-  --text-muted: #667781;
-  --border: #e9edef;
-  --error: #c0392b;
-  --shadow: 0 1px 0.5px rgb(11 20 26 / 13%);
+  --font-display: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-body: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
 
-  font-family: Inter, 'Segoe UI', system-ui, -apple-system, Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-body);
   font-size: 15px;
-  line-height: 1.4;
+  line-height: 1.5;
   color: var(--text);
-  color-scheme: light;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --accent: #0f8a7c;
-    --accent-dark: #0d3b36;
-    --bg-app: #0c1317;
-    --bg-panel: #111b21;
-    --bg-header: #1a252b;
-    --bar-muted: rgb(255 255 255 / 65%);
-    --bg-hover: #1a252b;
-    --bg-active: #183631;
-    --bg-chat: #0b141a;
-    --bubble-in: #e9edef;
-    --bubble-in-text: #111b21;
-    --bubble-out: #0b6e63;
-    --system-bg: #182229;
-    --system-text: #8696a0;
-    --text: #e9edef;
-    --text-muted: #8696a0;
-    --border: #222d34;
-    --error: #f15c6d;
-    --shadow: 0 1px 0.5px rgb(0 0 0 / 30%);
-    color-scheme: dark;
-  }
+  background: var(--bg);
+  color-scheme: dark;
 }
 
 *,
@@ -71,11 +42,24 @@ body,
 
 body {
   margin: 0;
-  background: var(--bg-app);
+  background: var(--bg);
 }
 
 button,
+input,
 textarea {
   font: inherit;
   color: inherit;
+  border-radius: 0;
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--accent-text);
+}
+
+/* Thin, dark scrollbars to match. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-strong) transparent;
 }
