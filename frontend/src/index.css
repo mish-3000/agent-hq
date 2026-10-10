@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+/* IBM Plex Sans / IBM Plex Mono are loaded by the <link> in index.html. */
 
 :root {
   /* Monochrome palette. The only accent is silver/chrome, used sparingly. */
@@ -43,6 +43,10 @@ body,
 body {
   margin: 0;
   background: var(--bg);
+}
+
+body, button, input {
+  font-family: 'IBM Plex Sans', sans-serif;
 }
 
 button,

@@ -18,7 +18,7 @@
 .chat-row-name,
 .activity-body strong,
 .system-line {
-  font-family: var(--font-mono);
+  font-family: 'IBM Plex Mono', monospace;
 }
 
 .app {
